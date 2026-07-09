@@ -1,18 +1,27 @@
-import uvm_pkg ::*;
+import uvm_pkg::*;
 `include "uvm_macros.svh"
 
 class ahb_env extends uvm_env;
-    `uvm_component_utils(ahb_env);
-    
-    ahb_agent agent;
-    
-    function new(string name , uvm_component parent);
-        super.new(name,parent);
-    endfunction 
+  `uvm_component_utils(ahb_env)
+  
+  ahb_agent agent;
+  ahb_scoreboard scoreboard;
+  ahb_coverage coverage;
 
-    virtual function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        agent = ahb_agent:: type_id :: create("agent", this);
-        endfunction
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    agent = ahb_agent::type_id::create("agent", this);
+    scoreboard = ahb_scoreboard::type_id::create("scoreboard", this);
+    coverage = ahb_coverage::type_id::create("coverage", this);
+  endfunction
+
+  virtual function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    agent.monitor.item_collected_port.connect(scoreboard.item_collected_export);
+    agent.monitor.item_collected_port.connect(coverage.analysis_export);
+  endfunction
 endclass
-    
